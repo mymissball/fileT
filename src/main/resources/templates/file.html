@@ -159,11 +159,11 @@
         getFile()
     })
 
-    var pathArray=new Array()
+    var pathArray=[]
     function getFile(path) {
         console.log("path:"+path)
         pathArray.push(path)
-        console.log(pathArray)
+        console.log("pathArray:"+pathArray)
         $.ajax({
             url:"getFiles",
             data:"path="+path,
