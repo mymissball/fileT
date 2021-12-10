@@ -30,7 +30,7 @@ public class FileController {
 
     @RequestMapping("download")
     public ResultJson<String> down(String filePath,HttpServletResponse response) throws IOException {
-
+        System.out.println(BASEPATH+" down....."+filePath);
         BufferedReader br=null;
 
         File file=new File(BASEPATH+filePath);
