@@ -74,7 +74,7 @@
 
     </div>
 
-    <button type="button" class="layui-btn layui-btn-radius  " id="getF"><i  class="layui-icon layui-icon-download-circle"></i> </button>
+    <button type="button" class="layui-btn layui-btn-radius  " onclick="getFile('/')"><i  class="layui-icon layui-icon-download-circle"></i> </button>
 
 </body>
 <script>
@@ -178,11 +178,12 @@
             console.log("pathArray:"+pathArray)
             path="/"
         }
+        pathArray.push(path)
         for(let i=0;i<pathArray.length;i++)
             link.append("<a href='javascript:getFile("+i+")'>"+pathArray[i]+"</a>")
 
+// id="getF"
 
-        pathArray.push(path)
         let realUrl=pathArray.join("")
 
 
