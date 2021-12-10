@@ -31,13 +31,13 @@ import java.util.Map;
 @RestController
 public class UploadController {
 
-
+    static String basePath="d:/test";
     @RequestMapping("api/upload")
     public ResultJson uploadFile( HttpServletRequest request) {
 
         DiskFileItemFactory factory=new DiskFileItemFactory();
        // DiskFileItem fileItem=new DiskFileItem();
-        factory.setRepository(new File("d:/test"));
+        factory.setRepository(new File(basePath));
         ServletFileUpload servletFileUpload=new ServletFileUpload(factory);
       //  servletFileUpload.setHeaderEncoding("utf-8");
         System.out.println(request+"__"+servletFileUpload);
@@ -50,10 +50,10 @@ public class UploadController {
             Map<String, List<FileItem>> map=servletFileUpload.parseParameterMap(request);
             System.out.println(map.size()+"_"+map);
             for(Map.Entry<String, List<FileItem>> list:map.entrySet()){
-                System.out.println(list.getKey()+"__"+list.getValue());
+                System.out.println("lsit.key:"+list.getKey()+"__"+list.getValue());
                 for(FileItem item:list.getValue()){
                     System.out.println(item);
-                    item.write(new File("d:/share/"+item.getName()));
+                    item.write(new File(basePath+item.getName()));
                 }
             }
         } catch (FileUploadException e) {

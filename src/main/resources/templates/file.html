@@ -20,7 +20,7 @@
             height: 86px;
             border:0.5px solid #00FF00;
         }
-       a{
+       #fileArea>a{
 
            width:80px;
            overflow: hidden;
@@ -35,7 +35,14 @@
 
         }
 
+        #path{
+            background-color: lightpink;
+            font-size: 25px;
+        }
 
+        a:hover{
+            color:green;
+        }
     </style>
 </head>
 <body>
@@ -56,6 +63,7 @@
 
         </table>
     </div>
+    <div ><p id="path"></p></div>
     <div class="layui-container">
         <div class="layui-row">
             <div class=" layui-col-md12 layui-col-sm12" id="file-p">
@@ -67,6 +75,7 @@
     </div>
 
     <button type="button" class="layui-btn layui-btn-radius  " id="getF"><i  class="layui-icon layui-icon-download-circle"></i> </button>
+
 </body>
 <script>
 
@@ -159,14 +168,28 @@
         getFile()
     })
 
-    var pathArray=[]
+    let pathArray=[]
+    let link=$("#path")
     function getFile(path) {
         console.log("path:"+path)
+        link.empty();
+        if(path==undefined){
+            pathArray=pathArray.slice(0,0);
+            console.log("pathArray:"+pathArray)
+            path="/"
+        }
+        for(let i=0;i<pathArray.length;i++)
+            link.append("<a href='javascript:getFile("+i+")'>"+pathArray[i]+"</a>")
+
+
         pathArray.push(path)
+        let realUrl=pathArray.join("")
+
+
         console.log("pathArray:"+pathArray)
         $.ajax({
             url:"getFiles",
-            data:"path="+path,
+            data:"path="+realUrl,
             dataType:"json",
             success:function(res){
                // layer.msg(JSON.stringify(res.data))

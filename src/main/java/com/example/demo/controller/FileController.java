@@ -16,14 +16,14 @@ import java.util.List;
 @RestController
 public class FileController {
 
-    String BASEPATH="d:/share/";
+    String BASEPATH="d:/share";
 
     @RequestMapping("getFiles")
     public ResultJson<List<String>> getFile(HttpServletResponse resp, HttpServletRequest request){
         resp.setCharacterEncoding("utf-8");
         String path=request.getParameter("path");
         System.out.println("getFileController...."+path);
-        path=(path==null||path.equals("undefined"))?BASEPATH:BASEPATH+path;
+        path=(path==null||path.equals("undefined")||path.equals("/"))?BASEPATH:BASEPATH+path;
         return new ResultJson<List<String>>(200,traverFile(path));
 
     }
