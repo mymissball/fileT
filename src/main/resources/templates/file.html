@@ -16,13 +16,13 @@
             background-color: khaki;
         }
         img{
-            width: 100px;
+            width: 85px;
             height: 86px;
             border:0.5px solid #00FF00;
         }
        #fileArea>a{
 
-           width:80px;
+           width:100px;
            overflow: hidden;
            white-space: nowrap;
            -ms-text-overflow: ellipsis;
@@ -89,7 +89,7 @@
     }
 
     function checkExcelType(fileName){
-        return /(xls|xlsx|xlts|csv|doc)$/.test(fileName);
+        return /(xls|xlsx|xlts|csv|doc|docx)$/.test(fileName);
     }
     function checkVideoType(fileName){
         return /(avi|mp4|mp3|rmvb|rm|mkv|webm|MOV)$/.test(fileName);
@@ -205,7 +205,7 @@
 
 
             },error:function(err){
-
+                alert("发生错误"+JSONify.toString(err))
             }
         })
     }
@@ -231,7 +231,7 @@
                 if(checkPictureType(endTitle)){
 
                    // html=html.replace(undefined,data[i])"image/pic.png"
-                    html=html.replace(undefined,data[i])
+                    html=html.replace(undefined,realUrl+data[i])
                 }else if(checkExcelType(endTitle)){
                     html=html.replace(undefined,"image/exce1.png")
                 }else if(checkProgramType(endTitle)){
