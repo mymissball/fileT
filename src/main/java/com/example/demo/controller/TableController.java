@@ -1,6 +1,7 @@
 package com.example.demo.controller;
 
 import com.example.demo.entity.ResultJson;
+import com.example.demo.os.OSInfo;
 import com.example.demo.t.TableT;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -20,10 +21,17 @@ import java.io.IOException;
 @ResponseBody
 public class TableController {
 
+    String basePath="";
+
     @Autowired
     private TableT serviceTable;
     @RequestMapping("/getFile")
     public ResultJson getFile(String path)  {
+        String osName= OSInfo.getOSname().toString();
+        System.out.println("操作系统:"+osName);
+        if(!"windows".equals(osName)){
+            basePath="/usr/local/upload/";
+        }
         System.out.println(path);
         String filePath="D:\\excel\\设备维修记录表 - 12 - 副本 - 副本.xlsx";
         if(path!=null)

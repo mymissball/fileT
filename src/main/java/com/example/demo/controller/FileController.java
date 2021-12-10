@@ -3,6 +3,7 @@ package com.example.demo.controller;
 import com.example.demo.entity.ResultJson;
 import com.example.demo.exception.FileException;
 import com.example.demo.exception.SuperException;
+import com.example.demo.os.OSInfo;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -16,24 +17,31 @@ import java.util.List;
 @RestController
 public class FileController {
 
-    String BASEPATH="d:/share";
+
+    String basePath="d:/share";
 
     @RequestMapping("getFiles")
     public ResultJson<List<String>> getFile(HttpServletResponse resp, HttpServletRequest request){
+        String osName= OSInfo.getOSname().toString();
+        System.out.println("操作系统:"+osName);
+        if(!"windows".equals(osName)){
+            basePath="/usr/local/upload/";
+        }
+       
         resp.setCharacterEncoding("utf-8");
         String path=request.getParameter("path");
         System.out.println("getFileController...."+path);
-        path=(path==null||path.equals("undefined")||path.equals("/"))?BASEPATH:BASEPATH+path;
+        path=(path==null||path.equals("undefined")||path.equals("/"))?basePath:basePath+path;
         return new ResultJson<List<String>>(200,traverFile(path));
 
     }
 
     @RequestMapping("download")
     public ResultJson<String> down(String filePath,HttpServletResponse response) throws IOException {
-        System.out.println(BASEPATH+" down....."+filePath);
+        System.out.println(basePath+" down....."+filePath);
         BufferedReader br=null;
 
-        File file=new File(BASEPATH+filePath);
+        File file=new File(basePath+filePath);
         if(!file.exists()){
             return new ResultJson<>(400,"file not found...");
         }

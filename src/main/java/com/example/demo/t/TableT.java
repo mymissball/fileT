@@ -119,7 +119,7 @@ public class TableT {
         FileOutputStream fos=null;
         byte[]bys=new byte[]{};
         FileInputStream fis=new FileInputStream(new File(picTestPath));
-        bys=fis.readAllBytes();
+    /*    bys=fis.readAllBytes();*/
 
 
       //  int picID=wb.addPicture(bys,Workbook.PICTURE_TYPE_PNG);

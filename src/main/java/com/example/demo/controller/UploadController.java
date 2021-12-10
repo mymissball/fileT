@@ -1,6 +1,7 @@
 package com.example.demo.controller;
 
 import com.example.demo.entity.ResultJson;
+import com.example.demo.os.OSInfo;
 import org.apache.tomcat.util.http.fileupload.FileItem;
 import org.apache.tomcat.util.http.fileupload.FileItemFactory;
 import org.apache.tomcat.util.http.fileupload.FileUploadException;
@@ -34,7 +35,11 @@ public class UploadController {
     static String basePath="d:/test";
     @RequestMapping("api/upload")
     public ResultJson uploadFile( HttpServletRequest request) {
-
+        String osName= OSInfo.getOSname().toString();
+        System.out.println("操作系统:"+osName);
+        if(!"windows".equals(osName)){
+            basePath="/usr/local/upload/";
+        }
         DiskFileItemFactory factory=new DiskFileItemFactory();
        // DiskFileItem fileItem=new DiskFileItem();
         factory.setRepository(new File(basePath));
