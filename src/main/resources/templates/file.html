@@ -18,7 +18,7 @@
         img{
             width: 85px;
             height: 86px;
-            border:0.5px solid #00FF00;
+            /*border: 1px solid #00FF00;*/
         }
        #fileArea>a{
 
@@ -40,16 +40,32 @@
             font-size: 25px;
         }
 
+        p>img {
+            width: 100%;
+            /* height: auto; */
+            transform: scale(1);
+            transition: transform 1s ease 0s;
+        }
+
+        p>img:hover {
+            transform: scale(1.4);
+        }
         a:hover{
             color:green;
+
+
         }
+        /*button{*/
+        /*    width: 100px;*/
+        /*}*/
     </style>
 </head>
 <body>
 
     <div class="layui-upload">
         <button type="button" class="layui-btn layui-bg-red" id="add-file">AddFile</button><button type="button" class="layui-btn layui-bg-orange" id="file-action">upload</button>
-        <img  style="width: 200px;height:200px;border: 1px solid yellow"  id="upload-img">
+        <img  style="width: 200px;height:200px;"  id="upload-img">
+
         <table class="layui-table">
             <thead>
                 <tr>
@@ -63,6 +79,8 @@
 
         </table>
     </div>
+    <button type="button" id="hide-btn" class="layui-btn layui-btn-lg layui-btn-radius  layui-hide"  onclick="getMsg()" >新<i  class="layui-icon layui-icon-add-circle"></i>建</button>
+    <button type="button" class="layui-btn layui-btn-radius  " onclick="getFile('/')"><i  class="layui-icon layui-icon-download-circle">刷新文件</i> </button>
     <div ><p id="path"></p></div>
     <div class="layui-container">
         <div class="layui-row">
@@ -74,11 +92,38 @@
 
     </div>
 
-    <button type="button" class="layui-btn layui-btn-radius  " onclick="getFile('/')"><i  class="layui-icon layui-icon-download-circle"></i> </button>
+
 
 </body>
 <script>
 
+    function getMsg(){
+
+        let msg=prompt(getPath()+"\n输入文件夹名","新文件夹")
+        if(msg==null){
+            layer.msg("创建文件夹取消")
+            return;
+        }
+
+        $.ajax({
+            url:"newFile?fileName="+getPath()+"/"+msg,
+            dataType: "json",
+            success:function(json){
+                console.log(json)
+                layer.msg(json.data+"____"+json.message)
+                if(json.code==200) {
+                    let path=json.message
+                    if(path!="/")
+                        setPath(-666)
+                    getFile(json.message)
+
+                }
+            },error:function(json){
+                layer.msg("发生错误")
+            }
+
+        })
+    }
 
     function checkPictureType(fileName){
         return /(jpg|png|jpeg|bmp|tif)$/.test(fileName);
@@ -119,9 +164,10 @@
             ,url:"api/upload"
             ,choose:function(obj){
                 let that=this
+                that.node.empty()
+                console.log("thisssssssssssss:")
 
-                console.log(this)
-                // obj.preview(function(index,file,result){
+                 //obj.preview(function(index,file,result){
                 //     console.log(file)
                 //     $("#upload-img").attr("src",result)
                 //     let str="<tr><td>"+file.name+"</td><td>"+Math.floor(file.size*100/1024)/100+"</td><td><div class='layui-progress' lay-showPercent='true' lay-filter='progress-"+index+"'><div  class='layui-progress-bar ' lay-percent=''></div></div></td></tr>"
@@ -133,11 +179,11 @@
                 let files=this.files=obj.pushFile()
                 console.log(files)
 
-                console.log("files.length:"+files.data)
-                console.log(obj)
 
                 for(let index in files){
-                    //$("#upload-img").attr("src",files[index])
+                    if(files[index].size<100*1024*1024)
+                    //if(files[index].type.match("image")!=null)
+                        blobToBase64(files[index])
                     let str="<tr><td>"+files[index].name+"</td><td>"+Math.floor(files[index].size*100/1024)/100+"</td><td><div class='layui-progress' lay-showPercent='true' lay-filter='progress-"+index+"'><div  class='layui-progress-bar ' lay-percent=''></div></div></td></tr>"
                     that.node.append(str)
                 }
@@ -149,16 +195,49 @@
                 element.progress("progress-"+index,n+"%")
 
             },done:function(obj){
-                console.log(obj)
-                layer.msg(JSON.stringify(obj))
+                console.log("----------------------------===================")
+                if(obj.code==0){
+                    getFile(path)
+                }
+                layer.msg(JSON.stringify(obj.data))
+            },before:function(){
+
+                this.data={
+                    "path":getPath()
+                }
             }
         });
     });
+
+
+
+    function blobToBase64(file) {
+        let reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = function(){
+            let res=reader.result
+            $("#upload-img").attr("src",res)
+        };
+    }
+
+
+
 
 </script>
 
 
 <script>
+
+    let path="";
+    function getPath(){
+
+        return path;
+    }
+
+    function setPath(realPath){
+        path=realPath;
+
+    }
     layui.use(['element'],function () {
         let element=layui.element;
 
@@ -172,16 +251,24 @@
     let link=$("#path")
     function getFile(path) {
         console.log("path:"+path)
+        console.log(this)
+
+
+        let hideBtn=$("#hide-btn")
+        console.log(hideBtn)
+        hideBtn.removeClass("layui-hide")
         link.empty();
-        if(path==undefined||path=="/"){
+        if(path==undefined||path=="/"||path==""){
             pathArray=pathArray.slice(0,0);
-            console.log("pathArray:"+pathArray)
+            console.log("pathArray000000:"+pathArray)
             path="/"
         }
         if("number"==typeof (path)){
             pathArray.splice(path+1,pathArray.length-path);
         }else {
-            pathArray.push(path)
+                console.log("path=realUrl:"+path+"--"+getPath())
+                if(getPath()!=-666 && path!=getPath())
+                    pathArray.push(path)
             //pathArray=temp
         }
         for(let i=0;i<pathArray.length;i++)
@@ -190,7 +277,7 @@
 // id="getF"
 
         let realUrl=pathArray.join("")
-
+        setPath(realUrl)
 
         console.log("pathArray:"+pathArray)
         $.ajax({
@@ -198,6 +285,7 @@
             data:"path="+realUrl,
             dataType:"json",
             success:function(res){
+
                // layer.msg(JSON.stringify(res.data))
                 console.log(res)
                 let data=res.data
@@ -230,8 +318,8 @@
 
                 if(checkPictureType(endTitle)){
 
-                   // html=html.replace(undefined,data[i])"image/pic.png"
-                    html=html.replace(undefined,realUrl+data[i])
+                    //html=html.replace(undefined,data[i])//"image/pic.png"
+                    html=html.replace(undefined,"coverPic"+realUrl+"85*86_"+data[i])
                 }else if(checkExcelType(endTitle)){
                     html=html.replace(undefined,"image/exce1.png")
                 }else if(checkProgramType(endTitle)){

@@ -27,7 +27,7 @@ public class FileController {
         if(!"windows".equals(osName)){
             basePath="/usr/local/upload/";
         }
-       
+
         resp.setCharacterEncoding("utf-8");
         String path=request.getParameter("path");
         System.out.println("getFileController...."+path);
@@ -80,10 +80,12 @@ public class FileController {
         List<String> list=new ArrayList<>();
 
         for(File file:files){
+            String fileName=file.getName();
+            UploadController.fileNames.add(fileName);
             if(file.isDirectory()){
-                list.add(file.getName()+"/");
+                list.add(fileName+"/");
             }else
-                list.add(file.getName());
+                list.add(fileName);
         }
         System.out.println(list);
         return list;
