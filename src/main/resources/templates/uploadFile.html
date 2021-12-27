@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>文件上传</title>
+
+    <script  src="jquery-3.6.0.min.js" ></script>
+    <link rel="stylesheet" href="layui/css/layui.css">
+    <script src="layui/layui.js"></script>
+</head>
+<body>
+<!--    <form enctype="multipart/form-data" id="form-data" method="post" action="/upload">-->
+        <input type="file" id="file" name="file">
+
+
+<input type="button" name="add-btn" id ="add-btn" value="添加"/>
+
+<input type="button" name="add-btn" id ="add-btn1" onclick="javascript:render()" value="加载"/>
+
+<form class="layui-form">
+    <div class="layui-form-item">
+        <label class="layui-form-label">addEncrypt</label>
+        <div class="layui-input-block">
+            <input type="checkbox" class="layui-form-checkbox" lay-skin="switch">
+        </div>
+    </div>
+    <div class="layui-form-item">
+
+        <button lay-submit lay-filter="btn" class="layui-btn layui-btn-warm layui-btn-radius" >submit</button>
+    </div>
+</form>
+<div>
+    <button type="button" class="layui-btn layui-btn-danger" id="upload"> <i class="layui-icon">&#xe67c;</i>上传表格</button>
+
+    <table id="upload-table"></table>
+</div>
+</body>
+<script  >
+layui.use(["form","element"],function(){
+
+    let form=layui.form,
+    element=layui.element;
+
+
+    form.on("button(btn)",function(data){
+        layer.msg("target")
+        return false;
+    })
+})
+
+
+
+
+
+    function getTable(data){
+        layui.use("table",function(){
+            let table=layui.table;
+            table.render({
+                elem:"#upload-table",
+                data:data,
+                page:true,
+                cols:[[
+
+                    {field:"id"},
+                    {field:"dep_name"},
+                    {field:"m_num"},
+                    {field:"date_of_repair"},
+                    {field:"breakDown"},
+                    {field:"reason"},
+                    {field:"solution"},
+                    {field:"m_desp"},
+                    {field:"name"},
+                    {field:"order_date"},
+                    {field:"end_date"},
+                    {field:"remark"}
+
+                    // {field:"id",title:"table_id",sort:true},
+                    // {field:"dep_name",title:"department"},
+                    // {field:"m_num",title:"machineNum"},
+                    // {field:"date_of_repair",title:"repairDate"},
+                    // {field:"breakDown",title:"breakDown"},
+                    // {field:"reason",title:"reason"},
+                    // {field:"solution",title:"solution"},
+                    // {field:"m_desp",title:"desp"},
+                    // {field:"name",title:"name"},
+                    // {field:"order_date",title:"order"},
+                    // {field:"end_date",title:"end"},
+                    // {field:"remark",title:"remark"}
+
+                ]]
+
+
+            })
+        })
+
+    }
+
+
+
+
+
+    layui.use(["upload"],function () {
+        let  upload=layui.upload;
+
+        upload.render({
+            elem:"#upload",
+            accept:"file",
+            url:"upload",
+            done:function(res,index,o){
+                console.log(res+" index: "+index+" "+o)
+                console.log(res)
+                console.log(res.data)
+                getTable(res.data);
+
+            }
+        })
+
+    })
+
+
+
+    document.getElementById("add-btn").addEventListener("click",function(){
+
+
+
+        let firstElement=document.firstElementChild
+
+        let lastElement=document.lastElementChild
+
+        let doc=document.createElement("div");
+        doc.setAttribute("id","div-head");
+
+        let k=document.createElement("div")
+        k.innerHTML="<h1>最后底行</h1>"
+        doc.appendChild(k)
+
+        //lastElement.innerHTML+="<h1>标签</h1>"
+        doc.innerHTML+="<h2>下面的h2</h2>"
+        lastElement.appendChild(doc)
+
+
+
+        let formData = new FormData();
+       // fromData.append("file",$("#from-data")[0].files[0]);$('#form-data')[0]
+        formData.append('file', $('#file')[0].files[0]);
+        $.ajax({
+            enctype: 'multipart/form-data',
+            async: false,
+            type:"post",
+            url:"/upload",
+            data:formData,
+            processData: false,
+            cache:false,
+            dataType:"json",
+            contentType : false,
+
+            success:(function(json){
+
+                console.log(json)
+                let resultArray=json.data
+                let tab=document.createElement("table")
+                tab.setAttribute("id","demo")
+                tab.setAttribute("border", '1px solid red;');
+                tab.setAttribute("cellspacing",0);
+                console.log(resultArray[0])
+                for(let i=0;i< resultArray.length;i++){
+
+                    let tr=document.createElement("tr")
+                    let th=document.createElement("th")
+
+                    th=document.createElement("th")
+                    th.innerText=resultArray[i].id
+                    tr.appendChild(th)
+
+                    th=document.createElement("th")
+                    th.innerText=resultArray[i].dep_name
+                    tr.appendChild(th)
+
+                    th=document.createElement("th")
+                    th.innerText=resultArray[i].m_num
+                    tr.appendChild(th)
+
+                    th=document.createElement("th")
+                    th.innerText=resultArray[i].date_of_repair
+                    tr.appendChild(th)
+
+                    th=document.createElement("th")
+                    th.innerText=resultArray[i].breakDown
+                    tr.appendChild(th)
+
+                    th=document.createElement("th")
+                    th.innerText=resultArray[i].reason
+                    tr.appendChild(th)
+
+                    th=document.createElement("th")
+                    th.innerText=resultArray[i].solution
+                    tr.appendChild(th)
+
+                    th=document.createElement("th")
+                    th.innerText=resultArray[i].m_desp
+                    tr.appendChild(th)
+
+                    th=document.createElement("th")
+                    th.innerText=resultArray[i].name
+                    tr.appendChild(th)
+
+                    th=document.createElement("th")
+                    th.innerText=resultArray[i].order_date
+                    tr.appendChild(th)
+
+                    th=document.createElement("th")
+                    th.innerText=resultArray[i].end_date
+                    tr.appendChild(th)
+
+                    th=document.createElement("th")
+                    th.innerText=resultArray[i].remark
+                    tr.appendChild(th)
+
+
+
+
+                    tab.appendChild(tr)
+
+
+                }
+
+
+                lastElement.appendChild(tab)
+
+            }),
+            error:(function(json){
+                alert("error:"+json)
+            })
+
+
+        })
+
+
+
+
+
+    })
+
+
+
+</script>
+
+</html>

@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0,user-scalable=no">
+
+
+    <title>Title</title>
+    <link rel="stylesheet" href="layui/css/layui.css">
+    <script src="layui/layui.js"></script>
+    <script src="jquery-3.6.0.min.js"></script>
+    <style>
+
+        #file-p{
+
+            background-color: khaki;
+        }
+        img{
+            width: 85px;
+            height: 86px;
+            /*border: 1px solid #00FF00;*/
+        }
+       #fileArea>a{
+
+           width:100px;
+           overflow: hidden;
+           white-space: nowrap;
+           -ms-text-overflow: ellipsis;
+           text-overflow: ellipsis;
+            display: inline-block;
+           margin: 5px;
+           text-align: center;
+
+
+
+        }
+
+        #path{
+            background-color: lightpink;
+            font-size: 25px;
+        }
+
+        p>img {
+            width: 100%;
+            /* height: auto; */
+            transform: scale(1);
+            transition: transform 1s ease 0s;
+        }
+
+        p>img:hover {
+            transform: scale(1.4);
+        }
+        a:hover{
+            color:green;
+
+
+        }
+        /*button{*/
+        /*    width: 100px;*/
+        /*}*/
+    </style>
+</head>
+<body>
+
+    <div class="layui-upload">
+        <button type="button" class="layui-btn layui-bg-red" id="add-file">AddFile</button><button type="button" class="layui-btn layui-bg-orange" id="file-action">upload</button>
+        <img  style="width: 200px;height:200px;"  id="upload-img">
+
+        <table class="layui-table">
+            <thead>
+                <tr>
+                    <th>fileName</th>
+                    <th>size</th>
+                    <th>status</th>
+                </tr>
+
+            </thead>
+            <tbody id="table-list"></tbody>
+
+        </table>
+    </div>
+    <button type="button" id="hide-btn" class="layui-btn layui-btn-lg layui-btn-radius  layui-hide"  onclick="getMsg()" >新<i  class="layui-icon layui-icon-add-circle"></i>建</button>
+    <button type="button" class="layui-btn layui-btn-radius  " onclick="getFile('/')"><i  class="layui-icon layui-icon-download-circle">刷新文件</i> </button>
+    <div ><p id="path"></p></div>
+    <div class="layui-container">
+        <div class="layui-row">
+            <div class=" layui-col-md12 layui-col-sm12" id="file-p">
+                <div id="fileArea"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+</body>
+<script>
+
+    function getMsg(){
+
+        let msg=prompt(getPath()+"\n输入文件夹名","新文件夹")
+        if(msg==null){
+            layer.msg("创建文件夹取消")
+            return;
+        }
+
+        $.ajax({
+            url:"newFile?fileName="+getPath()+"/"+msg,
+            dataType: "json",
+            success:function(json){
+                console.log(json)
+                layer.msg(json.data+"____"+json.message)
+                if(json.code==200) {
+                    let path=json.message
+                    if(path!="/")
+                        setPath(-666)
+                    getFile(json.message)
+
+                }
+            },error:function(json){
+                layer.msg("发生错误")
+            }
+
+        })
+    }
+
+    function checkPictureType(fileName){
+        return /(jpg|png|jpeg|bmp|tif)$/.test(fileName);
+    }
+
+    function checkCompressType(fileName){
+        return /(rar|7z|zip|gt)$/.test(fileName);
+    }
+
+    function checkExcelType(fileName){
+        return /(xls|xlsx|xlts|csv|doc|docx)$/.test(fileName);
+    }
+    function checkVideoType(fileName){
+        return /(avi|mp4|mp3|rmvb|rm|mkv|webm|MOV)$/.test(fileName);
+    }
+    function checkPdfType(fileName){
+        return /(pdf|ppt|pptx)$/.test(fileName);
+    }
+    function checkTxtType(fileName){
+        return /(txt|c|py)$/.test(fileName);
+    }
+    function checkProgramType(fileName){
+        return /(exe|jar)$/.test(fileName);
+    }
+
+    layui.use(["element","upload","layer"],function(){
+        let element=layui.element
+            ,upload=layui.upload
+            ,layer=layui.layer;
+
+        upload.render({
+            elem:"#add-file"
+            ,accept:"file"
+            ,node:$("#table-list")
+            ,auto:false
+            ,multiple:true
+            ,bindAction:"#file-action"
+            ,url:"api/upload"
+            ,choose:function(obj){
+                let that=this
+                that.node.empty()
+                console.log("thisssssssssssss:")
+
+                 //obj.preview(function(index,file,result){
+                //     console.log(file)
+                //     $("#upload-img").attr("src",result)
+                //     let str="<tr><td>"+file.name+"</td><td>"+Math.floor(file.size*100/1024)/100+"</td><td><div class='layui-progress' lay-showPercent='true' lay-filter='progress-"+index+"'><div  class='layui-progress-bar ' lay-percent=''></div></div></td></tr>"
+                //     that.node.append(str)
+                //     console.log(this)
+                //     element.render('progress')
+                //
+                // });
+                let files=this.files=obj.pushFile()
+                console.log(files)
+
+
+                for(let index in files){
+                    if(files[index].size<100*1024*1024)
+                    //if(files[index].type.match("image")!=null)
+                        blobToBase64(files[index])
+                    let str="<tr><td>"+files[index].name+"</td><td>"+Math.floor(files[index].size*100/1024)/100+"</td><td><div class='layui-progress' lay-showPercent='true' lay-filter='progress-"+index+"'><div  class='layui-progress-bar ' lay-percent=''></div></div></td></tr>"
+                    that.node.append(str)
+                }
+                element.render('progress')
+
+
+            },progress:function(n,elem,info,index){
+                console.log(n+"_"+index)
+                element.progress("progress-"+index,n+"%")
+
+            },done:function(obj){
+                console.log("----------------------------===================")
+                if(obj.code==0){
+                    getFile(path)
+                }
+                layer.msg(JSON.stringify(obj.data))
+            },before:function(){
+
+                this.data={
+                    "path":getPath()
+                }
+            }
+        });
+    });
+
+
+
+    function blobToBase64(file) {
+        let reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = function(){
+            let res=reader.result
+            $("#upload-img").attr("src",res)
+        };
+    }
+
+
+
+
+</script>
+
+
+<script>
+
+    let path="";
+    function getPath(){
+
+        return path;
+    }
+
+    function setPath(realPath){
+        path=realPath;
+
+    }
+    layui.use(['element'],function () {
+        let element=layui.element;
+
+    })
+
+    $("#getF").click(function(){
+        getFile()
+    })
+
+    let pathArray=[]
+    let link=$("#path")
+    function getFile(path) {
+        console.log("path:"+path)
+        console.log(this)
+
+
+        let hideBtn=$("#hide-btn")
+        console.log(hideBtn)
+        hideBtn.removeClass("layui-hide")
+        link.empty();
+        if(path==undefined||path=="/"||path==""){
+            pathArray=pathArray.slice(0,0);
+            console.log("pathArray000000:"+pathArray)
+            path="/"
+        }
+        if("number"==typeof (path)){
+            pathArray.splice(path+1,pathArray.length-path);
+        }else {
+                console.log("path=realUrl:"+path+"--"+getPath())
+                if(getPath()!=-666 && path!=getPath())
+                    pathArray.push(path)
+            //pathArray=temp
+        }
+        for(let i=0;i<pathArray.length;i++)
+            link.append("<a href='javascript:getFile("+i+")'>"+pathArray[i]+"</a>")
+
+// id="getF"
+
+        let realUrl=pathArray.join("")
+        setPath(realUrl)
+
+        console.log("pathArray:"+pathArray)
+        $.ajax({
+            url:"getFiles",
+            data:"path="+realUrl,
+            dataType:"json",
+            success:function(res){
+
+               // layer.msg(JSON.stringify(res.data))
+                console.log(res)
+                let data=res.data
+                setSub(data,realUrl)
+
+
+            },error:function(err){
+                alert("发生错误"+JSONify.toString(err))
+            }
+        })
+    }
+
+    function setSub(data,realUrl){
+        let doc=$("#fileArea")
+
+        doc.empty();
+        for(let i=0;i<data.length;i++){
+            let subTitle
+            let endTitle=subTitle=data[i].substr(data[i])//<i style='font-size: 80px' class='layui-icon layui-icon-file' id='i1'> </i>
+            let pug;
+            let   html="<img title="+subTitle+" src="+pug+">";;
+
+        if(endTitle.indexOf("/")!=-1){
+                console.log("is dir")
+                html=html.replace(undefined,"image/folder.png")
+                pug= 'href=javascript:getFile(\"'+data[i]+'\")'
+        }else if(data[i].indexOf(".")!=-1){
+                endTitle=data[i].substr(data[i].lastIndexOf(".")+1).toLowerCase();
+                subTitle=data[i].substr(0,data[i].lastIndexOf("."));
+
+                if(checkPictureType(endTitle)){
+
+                    //html=html.replace(undefined,data[i])//"image/pic.png"
+                    html=html.replace(undefined,"coverPic"+realUrl+"85*86_"+data[i])
+                }else if(checkExcelType(endTitle)){
+                    html=html.replace(undefined,"image/exce1.png")
+                }else if(checkProgramType(endTitle)){
+                    html=html.replace(undefined,"image/program1.png")
+                }else if(checkCompressType(endTitle)){
+                    html=html.replace(undefined,"image/compress.png")
+                }else if(checkPdfType(endTitle)){
+                    html=html.replace(undefined,"image/pdf.png")
+                }else if(checkVideoType(endTitle)){
+                    html=html.replace(undefined,"image/video.png")
+                }
+                pug= 'href="download?filePath='+realUrl+data[i]+"\""
+            }
+
+            doc.append("<a  class='layui-anim layui-anim-rotate' "+pug+"  title='"+data[i]+"'><p>"+html+"</p>"+data[i]+"</a>")
+        }
+    }
+
+
+</script>
+</html>
