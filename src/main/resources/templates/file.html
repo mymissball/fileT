@@ -137,10 +137,10 @@
         return /(xls|xlsx|xlts|csv|doc|docx)$/.test(fileName);
     }
     function checkVideoType(fileName){
-        return /(avi|mp4|mp3|rmvb|rm|mkv|webm|MOV)$/.test(fileName);
+        return /(avi|mp4|mp3|rmvb|rm|mkv|webm|mov)$/.test(fileName);
     }
     function checkPdfType(fileName){
-        return /(pdf|ppt|pptx)$/.test(fileName);
+        return /(pdf|ppt|pptx|pptm)$/.test(fileName);
     }
     function checkTxtType(fileName){
         return /(txt|c|py)$/.test(fileName);
@@ -181,25 +181,33 @@
 
 
                 for(let index in files){
-                    if(files[index].size<100*1024*1024)
-                    //if(files[index].type.match("image")!=null)
+
+                    if(files[index].size<5*1024*1024)
                         blobToBase64(files[index])
-                    let str="<tr><td>"+files[index].name+"</td><td>"+Math.floor(files[index].size*100/1024)/100+"</td><td><div class='layui-progress' lay-showPercent='true' lay-filter='progress-"+index+"'><div  class='layui-progress-bar ' lay-percent=''></div></div></td></tr>"
+                    let sourceSize=files[index].size
+                    let targetSize=(sourceSize=sourceSize/1024)>1024?(sourceSize=sourceSize/1024)>1024?(sourceSize=sourceSize/1024)>1024?(sourceSize=sourceSize/1024):"G":"M":"kb"
+
+                    let str="<tr><td>"+files[index].name+"</td><td>"+Math.floor(sourceSize*100)/100+targetSize+"</td><td><div class='layui-progress' lay-showPercent='true' lay-filter='progress-"+index+"'><div  class='layui-progress-bar ' lay-percent=''></div></div></td></tr>"
                     that.node.append(str)
                 }
                 element.render('progress')
 
 
-            },progress:function(n,elem,info,index){
-                console.log(n+"_"+index)
-                element.progress("progress-"+index,n+"%")
+            },progress:function(n,elem,info,index) {
+                console.log(n + "_" + index)
+                element.progress("progress-" + index, n + "%")
 
-            },done:function(obj){
-                console.log("----------------------------===================")
-                if(obj.code==0){
-                    getFile(path)
-                }
-                layer.msg(JSON.stringify(obj.data))
+                // },done:function(obj){
+                //     console.log(JSON.stringify(this)+"----------------------------==================="+this.files.empty())
+                //     if(obj.code==0){
+                //         getFile(path)
+                //     }
+                //     layer.msg(JSON.stringify(obj.data))
+                // }
+            } ,done:function(res,index,o){
+                layer.msg(JSON.stringify(res.data))
+                delete this.files[index]
+                console.log(this.files)
             },before:function(){
 
                 this.data={
@@ -319,7 +327,7 @@
                 if(checkPictureType(endTitle)){
 
                     //html=html.replace(undefined,data[i])//"image/pic.png"
-                    html=html.replace(undefined,"coverPic"+realUrl+"85*86_"+data[i])
+                    html=html.replace(undefined,encodePath("coverPic"+realUrl+data[i]))
                 }else if(checkExcelType(endTitle)){
                     html=html.replace(undefined,"image/exce1.png")
                 }else if(checkProgramType(endTitle)){
@@ -336,6 +344,16 @@
 
             doc.append("<a  class='layui-anim layui-anim-rotate' "+pug+"  title='"+data[i]+"'><p>"+html+"</p>"+data[i]+"</a>")
         }
+    }
+
+    function encodePath(path) {
+        console.log("path:"+path)
+        path = encodeURI(path).replace(/\#/g, '%23');
+
+        path = path.replace(/\?/g, '%3F');
+        console.log("path222:"+path)
+        return path;
+
     }
 
 

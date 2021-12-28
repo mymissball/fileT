@@ -4,28 +4,17 @@ import com.example.demo.ImageJ;
 import com.example.demo.entity.ResultJson;
 import com.example.demo.os.OSInfo;
 import org.apache.tomcat.util.http.fileupload.FileItem;
-import org.apache.tomcat.util.http.fileupload.FileItemFactory;
-import org.apache.tomcat.util.http.fileupload.FileUploadException;
-import org.apache.tomcat.util.http.fileupload.RequestContext;
-import org.apache.tomcat.util.http.fileupload.disk.DiskFileItem;
 import org.apache.tomcat.util.http.fileupload.disk.DiskFileItemFactory;
 import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
-import org.apache.tomcat.util.http.fileupload.servlet.ServletRequestContext;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartException;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.multipart.MultipartHttpServletRequest;
-import org.springframework.web.multipart.MultipartResolver;
-import org.springframework.web.multipart.commons.CommonsMultipartResolver;
-import org.springframework.web.multipart.support.StandardServletMultipartResolver;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.*;
-import java.net.URI;
-import java.nio.file.Path;
-import java.util.*;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @RestController
 public class UploadController {
@@ -36,8 +25,8 @@ public class UploadController {
 
     @RequestMapping("newFile")
     public static ResultJson newFolder(HttpServletRequest request){
-        String osName= OSInfo.getOSname().toString();
-        System.out.println("操作系统:"+osName);
+        String osName= OSInfo.getOSname().toString().toLowerCase();
+        System.out.println("操作系统-newFile:"+osName);
         if(!"windows".equals(osName)){
             basePath="/usr/local/upload/";
         }
@@ -70,10 +59,10 @@ public class UploadController {
 
 
     @RequestMapping("api/upload")
-    public ResultJson uploadFile( HttpServletRequest request,String path) {
+    public ResultJson uploadFile( HttpServletRequest request) {
         int resultCode=0;
-        String osName= OSInfo.getOSname().toString();
-        System.out.println("操作系统:"+osName+"_path:"+path+"P_PP:"+request.getParameter("path"));
+        String osName= OSInfo.getOSname().toString().toLowerCase();
+
         if(!"windows".equals(osName)){
             basePath="/usr/local/upload/";
         }
@@ -111,22 +100,12 @@ public class UploadController {
         }
 
         for(FileItem item:fileItem){
-            String filePath=basePath+pathMap.get("path")+item.getName();
+            String filePath=basePath+(pathMap.get("path").equals("")?"/":pathMap.get("path"))+item.getName();
             System.out.println("itemName:"+item.getFieldName()+"__"+filePath);
             File temp=new File(filePath);
             try {
-                  item.write(temp);
+                item.write(temp);
 
-//                InputStream is=item.getInputStream();
-//                FileOutputStream fos=new FileOutputStream(new File(filePath));
-//                byte[]bys=new byte[1024];
-//                int len=-1;
-//                while((len=is.read(bys))!=-1){
-//                    fos.write(bys,0,len);
-//                }
-//                fos.flush();
-//                fos.close();
-//                is.close();
                 item.delete();
             } catch (Exception e) {
                 resultCode=444;
@@ -136,6 +115,6 @@ public class UploadController {
             ImageJ.traverFile(temp);
         }
 
-        return new ResultJson(resultCode,"上传成功"+factory.getRepository(),System.getProperty("java.io.tmpdir"));
+        return new ResultJson(resultCode,"上传成功",System.getProperty("java.io.tmpdir"));
     }
 }

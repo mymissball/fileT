@@ -1,16 +1,15 @@
 package com.example.demo.controller;
 
 import com.example.demo.entity.ResultJson;
-import com.example.demo.exception.FileException;
-import com.example.demo.exception.SuperException;
 import com.example.demo.os.OSInfo;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,12 +17,12 @@ import java.util.List;
 public class FileController {
 
 
-    String basePath="d:/share";
+    String basePath="d:/shared";
 
     @RequestMapping("getFiles")
     public ResultJson<List<String>> getFile(HttpServletResponse resp, HttpServletRequest request){
-        String osName= OSInfo.getOSname().toString();
-        System.out.println("操作系统:"+osName);
+        String osName= OSInfo.getOSname().toString().toLowerCase();
+        System.out.println("操作系统-getFile:"+osName);
         if(!"windows".equals(osName)){
             basePath="/usr/local/upload/";
         }
@@ -39,7 +38,6 @@ public class FileController {
     @RequestMapping("download")
     public ResultJson<String> down(String filePath,HttpServletResponse response) throws IOException {
         System.out.println(basePath+" down....."+filePath);
-        BufferedReader br=null;
 
         File file=new File(basePath+filePath);
         if(!file.exists()){
@@ -59,17 +57,6 @@ public class FileController {
         while((length=fis.read(bys))!=-1){
             response.getOutputStream().write(bys,0,length);
         }
-    //    fis.close();
-//        br=new BufferedReader(new InputStreamReader(fis,"utf-8"));
-//        BufferedWriter bw=new BufferedWriter(new OutputStreamWriter(response.getOutputStream()));
-//        String temp=null;
-//        while((temp=br.readLine())!=null){
-//            bw.write(temp);
-//        }
-//        bw.flush();
-//        bw.close();
-//        br.close();
-
 
         return new ResultJson<>(200,file.getName()+" downloaded");
     }

@@ -115,7 +115,7 @@ public class ImageJ {
         //String picUrl="https://thumbs.dreamstime.com/z/teddy-bear-cactus-tuscon-arizona-closeup-picuture-taken-sonora-desert-museum-176300460.jpg";
         //picUrl="https://tenfei03.cfp.cn/creative/vcg/veer/1600water/veer-312002591.jpg";
         //picUrl="https://tenfei03.cfp.cn/creative/vcg/veer/1600water/veer-148461976.jpg";
-        String picUrl="e:/root";
+        String picUrl="d:\\shared";
         File file=new File(picUrl);
         System.out.println(file+"_"+file.exists());
         File[] strs=file.listFiles();
@@ -125,15 +125,20 @@ public class ImageJ {
             traverFile(str);
         }
 
+
     }
 
-    private static String basePath="e:/";//需要保存的目标根目录
+//    static{
+//        addListen(); //注册 监听ImageJ 文件被修改时的处理
+//    }
+    private static String basePath="e:\\";//需要保存的目标根目录
+    private static String rootStr="shared";
     public static void traverFile(File file){
 //        //如果是文件根目录需要排除这些文件or文件夹 否则抛异常...
 //        if("S-1-5-18".equals(file.getName())||"System Volume Information".equals(file.getName()))
 //            return;
         String sourcePath="";//储存源文件的绝对路径用于提交到转换图片文件时的:imagePlus=opener.openImage(picPath);
-        new ImageJ().addListen(); //注册 监听ImageJ 文件被修改时的处理
+        System.out.println("rootName:"+file.getAbsolutePath());
         if(file.isDirectory()){
             File[]list=file.listFiles();
             for(File f:list)
@@ -148,31 +153,34 @@ public class ImageJ {
                 return;
             suffix=fileName.substring(index+1);
             //自定义的文件后缀
-            String regex="png|jpeg|jpg|png|tif";
+            String regex="jpeg|jpg|png|tif|bmp";
             //正则
             Pattern pattern=Pattern.compile(regex);
             Matcher matcher=pattern.matcher(suffix);
-            System.out.print(fileName+"___"+suffix);
+
             //匹配是否为图片后缀
             if(matcher.find()){
-                String realPath=file.getParent();
-                sourcePath=realPath+"/"+fileName; //源文件路径
+                String realPath=file.getParent()+"\\";
+                sourcePath=realPath+fileName; //源文件路径
 
                 //确定文件转换后的子路径 basePath+ ***
                 String pathTemp="";
                 if(!realPath.equals(basePath)) {
-                    realPath = realPath.substring(basePath.length());
-                    pathTemp="coverPic/"+realPath+"/";
+                   // realPath = realPath.substring(basePath.length());
+
+                    realPath = realPath.substring(realPath.indexOf(rootStr)+rootStr.length());
+
+                    pathTemp="coverPic"+realPath;
                 }
 
-                path=basePath+pathTemp; //储存转换后的文件真实路径
-                File f=new File(path);
-                System.out.println("___path:__"+path);
+                String targetPath=basePath+pathTemp; //储存转换后的文件真实路径
+                File f=new File(targetPath);
+
                 if(!f.exists()){
-                    System.out.println("文件'"+path+"'不存在,创建状态:"+f.mkdirs());
+                    System.out.println("文件'"+targetPath+"'不存在,创建状态:"+f.mkdirs());
                 }
 
-                loadingFile(sourcePath,needChange);
+                loadingFile(sourcePath,needChange,targetPath);
             }
         }
     }
@@ -182,7 +190,7 @@ public class ImageJ {
      * 载入图片,设置需要转换图片的大小。会被图片update监听到然后调用方法保存新的图片
      * @param picPath 图片的路径
      */
-    private static void loadingFile(String picPath,boolean needChange){
+    private static void loadingFile(String picPath,boolean needChange,String targetPath){
 
         Opener opener=new Opener();
 
@@ -190,8 +198,9 @@ public class ImageJ {
         String fileName=imagePlus.getTitle();
 
         if(needChange) {
-            System.out.println("需要将载入图片进行转换--异步回调--下方设置转换的尺寸大小-"+width+"*"+height);
-            imagePlus.resize(width, height, null);
+
+            //imagePlus.resize(width, height, null);
+            saveFile(imagePlus.resize(width, height, null),targetPath);
         }else {
             System.out.println("当前不转换载入的图片-----40000000000000000---"+fileName);
         }
@@ -203,10 +212,10 @@ public class ImageJ {
      * 保存图片
      * @param imagePlus 图片源
      */
-    private static void saveFile(ImagePlus imagePlus){
+    private static void saveFile(ImagePlus imagePlus,String targetPath){
         String fileName=imagePlus.getOriginalFileInfo().fileName;
         FileSaver fileSaver=new FileSaver(imagePlus);
-        System.out.println(path+fileName+" -title- "+i+++"."+fileSaver.saveAsPng(path+fileName));
+        System.out.println(targetPath+fileName+" -title- "+i+++"."+fileSaver.saveAsPng(targetPath+fileName));
         imagePlus.close();
 
 
@@ -216,7 +225,7 @@ public class ImageJ {
     /**
      *  监听图片状态
      */
-    private void addListen(){
+    private static void addListen(){
         ImagePlus.addImageListener(new ImageListener() {
             @Override //此状态是在图片打开窗口时触发
             public void imageOpened(ImagePlus imp) {
@@ -230,7 +239,7 @@ public class ImageJ {
 
             @Override //此状态是在图片被更改有些参数时触发,比如更改图片大小
             public void imageUpdated(ImagePlus imp) {
-                saveFile(imp);
+                saveFile(imp,null);
             }
         });
     }
