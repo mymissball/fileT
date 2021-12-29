@@ -31,8 +31,24 @@ public class FileController {
         String path=request.getParameter("path");
         System.out.println("getFileController...."+path);
         path=(path==null||path.equals("undefined")||path.equals("/"))?basePath:basePath+path;
+
+        if((basePath+"/test/").equals(path)){
+            return new ResultJson<List<String>>(600,null,"需要权限，请输入密码:");
+        }
         return new ResultJson<List<String>>(200,traverFile(path));
 
+    }
+
+
+    String pass="112266";
+    @RequestMapping("checkCode")
+    public ResultJson<List<String>> checkEncrypt(String encrypt, String path){
+        System.out.println("checkCript:"+encrypt+"__path:"+path);
+        if(!pass.equals(encrypt))
+            return new ResultJson<List<String>>(600,null,"密码错误!!!");
+
+        path=basePath+path;
+        return new ResultJson<List<String>>(200,traverFile(path));
     }
 
     @RequestMapping("download")

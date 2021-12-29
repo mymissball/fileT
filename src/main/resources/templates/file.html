@@ -255,6 +255,24 @@
         getFile()
     })
 
+    function verify(encrypt,realUrl){
+
+       return  $.ajax({
+            url:"checkCode",
+            data:"encrypt="+encrypt+"&path="+realUrl,
+            dataType:"json",
+            async:false,
+            success:function(res){
+                console.log("encrypt:"+JSON.stringify(res))
+
+            },error:function(err){
+                alert("发生错误"+JSON.stringify(err))
+            }
+        })
+    }
+
+
+
     let pathArray=[]
     let link=$("#path")
     function getFile(path) {
@@ -279,8 +297,8 @@
                     pathArray.push(path)
             //pathArray=temp
         }
-        for(let i=0;i<pathArray.length;i++)
-            link.append("<a href='javascript:getFile("+i+")'>"+pathArray[i]+"</a>")
+        // for(let i=0;i<pathArray.length;i++)
+        //     link.append("<a href='javascript:getFile("+i+")'>"+pathArray[i]+"</a>")
 
 // id="getF"
 
@@ -292,18 +310,43 @@
             url:"getFiles",
             data:"path="+realUrl,
             dataType:"json",
+            async:false,
             success:function(res){
 
                // layer.msg(JSON.stringify(res.data))
                 console.log(res)
+                if(res.code==600){
+                    let msg=prompt(getPath()+"\n"+res.message)
+                    if(msg==null){
+                        failedToAccess(getPath()+"取消访问")
+                        return;
+                    }else {
+                        res = verify(msg, realUrl).responseJSON
+                        if (res.code != 200) {
+
+                            failedToAccess(res.message)
+                            return ;
+                        }
+                    }
+                }
+
                 let data=res.data
                 setSub(data,realUrl)
+                for(let i=0;i<pathArray.length;i++)
+                    link.append("<a href='javascript:getFile("+i+")'>"+pathArray[i]+"</a>")
 
 
             },error:function(err){
                 alert("发生错误"+JSONify.toString(err))
             }
         })
+    }
+
+    function failedToAccess(msg){
+        pathArray.pop()
+        for (let i = 0; i < pathArray.length; i++)
+            link.append("<a href='javascript:getFile(" + i + ")'>" + pathArray[i] + "</a>")
+        layer.msg(msg)
     }
 
     function setSub(data,realUrl){
